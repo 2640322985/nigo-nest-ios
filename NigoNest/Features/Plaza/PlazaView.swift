@@ -28,17 +28,20 @@ struct PlazaView: View {
                     ProgressView().tint(Palette.ink)
                 }
                 ForEach(posts) { post in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(post.nickname)
-                            .font(InkFont.title(18))
-                        Text(post.content)
-                            .font(InkFont.body())
-                            .fixedSize(horizontal: false, vertical: true)
-                        Text("赞 \(post.likeCount)    评论 \(post.commentCount)")
-                            .font(InkFont.body(13))
-                        Button("打开") { nav.open(.post(post.id)) }
-                            .font(InkFont.body(14))
-                            .foregroundStyle(Palette.ink)
+                    HStack(alignment: .top, spacing: 12) {
+                        InkAvatar(url: post.avatarUrl, size: 44)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(post.nickname)
+                                .font(InkFont.title(18))
+                            Text(post.content)
+                                .font(InkFont.body())
+                                .fixedSize(horizontal: false, vertical: true)
+                            Text("赞 \(post.likeCount)    评论 \(post.commentCount)")
+                                .font(InkFont.body(13))
+                            Button("打开") { nav.open(.post(post.id)) }
+                                .font(InkFont.body(14))
+                                .foregroundStyle(Palette.ink)
+                        }
                     }
                     .padding(.vertical, 8)
                     WavyDivider()

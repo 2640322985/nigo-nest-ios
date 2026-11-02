@@ -5,6 +5,7 @@ struct SessionUser: Codable, Equatable {
     var name: String
     var nickname: String
     var token: String
+    var avatarUrl: String?
 }
 
 @MainActor
@@ -31,11 +32,13 @@ final class SessionStore: ObservableObject {
         let profile = object?["user"] as? [String: Any] ?? [:]
         let studentId = (profile["studentId"] as? String) ?? username
         guard !token.isEmpty else { throw APIError.message("登录没有返回凭证") }
+        let avatar = (profile["avatarUrl"] as? String) ?? ""
         let next = SessionUser(
             studentId: studentId,
             name: (profile["name"] as? String) ?? "",
             nickname: (profile["nickname"] as? String) ?? "同学",
-            token: token
+            token: token,
+            avatarUrl: avatar.hasPrefix("http") ? avatar : nil
         )
         user = next
         if let encoded = try? JSONEncoder().encode(next) {

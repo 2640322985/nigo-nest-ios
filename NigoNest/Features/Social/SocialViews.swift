@@ -15,7 +15,8 @@ struct FriendsView: View {
             StatusText(text: error)
             Text("收到的申请").font(InkFont.title(18))
             ForEach(incoming, id: \.id) { item in
-                HStack {
+                HStack(spacing: 12) {
+                    InkAvatar(size: 40)
                     Text(item.name).font(InkFont.body())
                     Spacer()
                     Button("同意") { Task { await accept(item.id) } }
@@ -25,7 +26,10 @@ struct FriendsView: View {
             }
             WavyDivider()
             ForEach(friends, id: \.id) { item in
-                InkRow(title: item.name) { nav.open(.chat(item.id, item.name)) }
+                HStack(spacing: 12) {
+                    InkAvatar(size: 40)
+                    InkRow(title: item.name) { nav.open(.chat(item.id, item.name)) }
+                }
             }
         }
         .task { await load() }

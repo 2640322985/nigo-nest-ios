@@ -8,11 +8,17 @@ struct ProfileView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 InkTitle(text: "我的", size: 34)
-                Text(session.user?.nickname ?? "同学")
-                    .font(InkFont.body())
-                    .padding(.top, 12)
-                Text(session.user?.studentId ?? "")
-                    .font(InkFont.body(14))
+                HStack(alignment: .center, spacing: 14) {
+                    InkAvatar(url: session.user?.avatarUrl, size: 64)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(session.user?.nickname ?? "同学")
+                            .font(InkFont.title(20))
+                        Text(session.user?.studentId ?? "")
+                            .font(InkFont.body(14))
+                    }
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 4)
                 WavyDivider()
                 InkRow(title: "账号") { nav.open(.account) }
                 InkRow(title: "签到") { nav.open(.checkin) }

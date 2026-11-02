@@ -31,10 +31,13 @@ private struct PlazaSample: View {
                     .font(InkFont.body(14))
                     .padding(.bottom, 20)
                 ForEach(Array(posts.enumerated()), id: \.offset) { _, post in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(post.0).font(InkFont.title(18))
-                        Text(post.1).font(InkFont.body())
-                        Text("赞 \(post.2)    评论 \(post.3)").font(InkFont.body(13))
+                    HStack(alignment: .top, spacing: 12) {
+                        InkAvatar(size: 44)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(post.0).font(InkFont.title(18))
+                            Text(post.1).font(InkFont.body())
+                            Text("赞 \(post.2)    评论 \(post.3)").font(InkFont.body(13))
+                        }
                     }
                     .padding(.vertical, 8)
                     WavyDivider()
@@ -53,16 +56,17 @@ private struct ProfileSample: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    InkTitle(text: "我的", size: 34)
-                    Spacer()
-                    StreetCat()
+                InkTitle(text: "我的", size: 34)
+                HStack(alignment: .center, spacing: 14) {
+                    InkAvatar(size: 64)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("薄凉")
+                            .font(InkFont.title(20))
+                        Text("202521147161")
+                            .font(InkFont.body(14))
+                    }
                 }
-                Text("薄凉")
-                    .font(InkFont.body())
-                    .padding(.top, 8)
-                Text("202521147161")
-                    .font(InkFont.body(14))
+                .padding(.top, 16)
                 WavyDivider()
                 ForEach(rows, id: \.self) { name in
                     InkRow(title: name) {}

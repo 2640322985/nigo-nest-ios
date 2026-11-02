@@ -180,6 +180,7 @@ struct AccountView: View {
 
     var body: some View {
         PageScaffold(title: "账号") {
+            InkAvatar(url: session.user?.avatarUrl, size: 72)
             Text(session.user?.studentId ?? "").font(InkFont.body(14))
             TextField("昵称", text: $nickname).inkField()
             InkButton(title: "保存昵称") { Task { await save() } }

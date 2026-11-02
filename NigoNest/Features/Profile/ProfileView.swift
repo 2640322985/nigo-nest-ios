@@ -33,7 +33,7 @@ struct ProfileView: View {
                         InkAvatar(url: session.user?.avatarUrl, size: 64)
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 8) {
-                                Text(session.user?.name?.isEmpty == false ? session.user!.name : (session.user?.nickname ?? "同学"))
+                                Text(displayName)
                                     .font(InkFont.title(20))
                                 if !titleText.isEmpty {
                                     Text(titleText)
@@ -119,6 +119,12 @@ struct ProfileView: View {
         }
         .background(Palette.paper)
         .task { await reload() }
+    }
+
+    private var displayName: String {
+        let name = session.user?.name ?? ""
+        if !name.isEmpty { return name }
+        return session.user?.nickname ?? "同学"
     }
 
     private var showYx: Bool {

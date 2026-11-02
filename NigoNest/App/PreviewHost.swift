@@ -6,12 +6,46 @@ struct PreviewHost: View {
     var body: some View {
         switch page {
         case "plaza":
-            PlazaSample()
+            PreviewTabs(selection: 0)
         case "profile":
-            ProfileSample()
+            PreviewTabs(selection: 1)
+        case "back":
+            BackSample()
         default:
             LoginView()
                 .environmentObject(SessionStore())
+        }
+    }
+}
+
+private struct PreviewTabs: View {
+    var selection: Int
+
+    var body: some View {
+        TabView(selection: .constant(selection)) {
+            Tab("广场", systemImage: "bubble.left.and.bubble.right", value: 0) {
+                PlazaSample()
+            }
+            Tab("我的", systemImage: "person", value: 1) {
+                ProfileSample()
+            }
+        }
+    }
+}
+
+private struct BackSample: View {
+    @State private var path = [0]
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            PlazaSample()
+                .navigationTitle("广场")
+                .navigationDestination(for: Int.self) { _ in
+                    PageScaffold(title: "课表") {
+                        Text("下一节课的备注写在这里")
+                            .font(InkFont.body())
+                    }
+                }
         }
     }
 }

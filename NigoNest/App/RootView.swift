@@ -11,23 +11,13 @@ struct RootView: View {
                 LoginView()
             } else {
                 NavigationStack(path: $nav.path) {
-                    VStack(spacing: 0) {
-                        Group {
-                            if tab == 0 {
-                                PlazaView()
-                            } else {
-                                ProfileView()
-                            }
+                    TabView(selection: $tab) {
+                        Tab("广场", systemImage: "bubble.left.and.bubble.right", value: 0) {
+                            PlazaView()
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        HStack {
-                            tabButton("广场", index: 0)
-                            tabButton("我的", index: 1)
+                        Tab("我的", systemImage: "person", value: 1) {
+                            ProfileView()
                         }
-                        .padding(.horizontal, 28)
-                        .padding(.top, 8)
-                        .padding(.bottom, 12)
-                        .background(Palette.paper)
                     }
                     .navigationDestination(for: AppRoute.self) { route in
                         switch route {
@@ -56,18 +46,5 @@ struct RootView: View {
             }
         }
         .background(Palette.paper)
-    }
-
-    private func tabButton(_ title: String, index: Int) -> some View {
-        Button {
-            tab = index
-        } label: {
-            Text(title)
-                .font(index == tab ? InkFont.title(20) : InkFont.body())
-                .foregroundStyle(Palette.ink)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-        }
-        .buttonStyle(.plain)
     }
 }

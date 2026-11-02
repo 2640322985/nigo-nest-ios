@@ -25,9 +25,10 @@ struct LoginView: View {
                         .font(InkFont.body(14))
                         .foregroundStyle(Palette.ink)
                 }
-                InkButton(title: busy ? "登录中" : "登录") {
+                Button(busy ? "登录中" : "登录") {
                     Task { await submit() }
                 }
+                .officialAction()
                 .disabled(busy)
             }
             .padding(28)

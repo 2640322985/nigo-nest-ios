@@ -37,9 +37,10 @@ struct ProfileView: View {
                 InkRow(title: "发帖") { nav.open(.compose) }
                 WavyDivider()
                 InkRow(title: "功能建议") { nav.open(.suggestions) }
-                InkButton(title: "退出登录", filled: false) {
+                Button("退出登录") {
                     session.logout()
                 }
+                .officialAction(prominent: false)
                 .padding(.top, 16)
             }
             .padding(24)

@@ -5,12 +5,13 @@ on:
 
 jobs:
   simulator:
-    runs-on: macos-15
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v4
 
       - name: Generate the Xcode project
         run: |
+          xcodebuild -version
           brew install xcodegen
           xcodegen generate
 
@@ -27,9 +28,11 @@ jobs:
       - name: Boot a simulator and capture the pages
         run: |
           set -euo pipefail
-          DEVICE_TYPE=$(xcrun simctl list devicetypes | sed -n 's/.*(\(com.apple.CoreSimulator.SimDeviceType.iPhone-1[56]\)).*/\1/p' | head -n 1)
-          RUNTIME=$(xcrun simctl list runtimes | sed -n 's/.* - \(com.apple.CoreSimulator.SimRuntime.iOS-[^ ]*\).*/\1/p' | tail -n 1)
+          DEVICE_TYPE="iPhone 17"
+          RUNTIME="com.apple.CoreSimulator.SimRuntime.iOS-27-0"
           echo "DEVICE_TYPE=$DEVICE_TYPE RUNTIME=$RUNTIME"
+          xcrun simctl list runtimes
+          xcrun simctl list devicetypes | sed -n '/iPhone/p'
           UDID=$(xcrun simctl create nigo-preview "$DEVICE_TYPE" "$RUNTIME")
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
@@ -46,6 +49,7 @@ jobs:
           capture login
           capture plaza
           capture profile
+          capture back
 
       - uses: actions/upload-artifact@v4
         with:

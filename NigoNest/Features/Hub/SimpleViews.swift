@@ -14,6 +14,9 @@ struct PageScaffold<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Palette.paper)
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(false)
     }
 }
 

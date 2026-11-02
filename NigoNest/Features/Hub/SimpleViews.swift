@@ -74,14 +74,24 @@ struct CheckinView: View {
 
 struct LeaderboardView: View {
     @EnvironmentObject private var session: SessionStore
-    @State private var lines: [String] = []
+    @State private var rows: [(rank: Int, name: String, points: Int, mine: Bool)] = []
+    @State private var me = ""
     @State private var error = ""
 
     var body: some View {
         PageScaffold(title: "排行榜") {
             StatusText(text: error)
-            ForEach(lines, id: \.self) { line in
-                Text(line).font(InkFont.body())
+            if !me.isEmpty { Text(me).font(InkFont.body()) }
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack {
+                    Text("\(row.rank)")
+                        .font(InkFont.title(18))
+                        .frame(width: 36, alignment: .leading)
+                    Text(row.name).font(row.mine ? InkFont.title(16) : InkFont.body())
+                    Spacer()
+                    Text("\(row.points)").font(InkFont.body())
+                }
+                .foregroundStyle(Palette.ink)
                 WavyDivider()
             }
         }
@@ -91,9 +101,12 @@ struct LeaderboardView: View {
     private func load() async {
         do {
             let data = JSON.object(try await session.client.get("api/checkin/leaderboard"))
-            lines = JSON.dictionaries(data["items"]).map { row in
-                "\(JSON.int(row["rank"])). \(JSON.string(row["name"]))  \(JSON.int(row["points"]))"
+            rows = JSON.dictionaries(data["items"]).map { row in
+                (JSON.int(row["rank"]), JSON.string(row["name"]), JSON.int(row["points"]), JSON.bool(row["isMe"]))
             }
+            let mine = data["me"] as? [String: Any] ?? [:]
+            let rank = JSON.int(mine["rank"])
+            me = rank > 0 ? "我的名次 \(rank)  ·  \(JSON.int(mine["points"])) 分" : ""
         } catch {
             self.error = error.localizedDescription
         }
@@ -147,17 +160,30 @@ struct SuggestionsView: View {
     }
 }
 
+private struct NoteItem: Identifiable {
+    var id: Int
+    var title: String
+    var body: String
+    var read: Bool
+    var type: String
+}
+
 struct NotificationsView: View {
     @EnvironmentObject private var session: SessionStore
-    @State private var rows: [String] = []
+    @EnvironmentObject private var nav: AppNav
+    @State private var rows: [NoteItem] = []
     @State private var error = ""
 
     var body: some View {
         PageScaffold(title: "消息") {
             StatusText(text: error)
             InkButton(title: "全部已读", filled: false) { Task { await readAll() } }
-            ForEach(rows, id: \.self) { row in
-                Text(row).font(InkFont.body())
+            ForEach(rows) { row in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(row.title).font(row.read ? InkFont.body() : InkFont.title(16))
+                    Text(row.body).font(InkFont.body(14))
+                }
+                .onTapGesture { Task { await open(row) } }
                 WavyDivider()
             }
         }
@@ -168,11 +194,25 @@ struct NotificationsView: View {
         do {
             let data = JSON.object(try await session.client.get("api/notifications?page=1&pageSize=30"))
             rows = JSON.dictionaries(data["notifications"]).map { row in
-                "\(JSON.string(row["title"]))\n\(JSON.string(row["body"]))"
+                NoteItem(
+                    id: JSON.int(row["id"]),
+                    title: JSON.string(row["title"]),
+                    body: JSON.string(row["body"]),
+                    read: !JSON.string(row["readAt"]).isEmpty,
+                    type: JSON.string(row["type"])
+                )
             }
         } catch {
             self.error = error.localizedDescription
         }
+    }
+
+    private func open(_ row: NoteItem) async {
+        _ = try? await session.client.post("api/notifications/\(row.id)/read", json: [:])
+        if row.type == "friend_request" || row.type == "friend_accepted" {
+            nav.open(.friends)
+        }
+        await load()
     }
 
     private func readAll() async {

@@ -27,6 +27,7 @@ struct InkButton: View {
 
 struct InkRow: View {
     var title: String
+    var badge: Int = 0
     var action: () -> Void
 
     var body: some View {
@@ -35,6 +36,14 @@ struct InkRow: View {
                 Text(title)
                     .font(InkFont.body())
                     .foregroundStyle(Palette.ink)
+                if badge > 0 {
+                    Text(badge > 99 ? "99+" : "\(badge)")
+                        .font(InkFont.body(12))
+                        .foregroundStyle(Palette.paper)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Palette.ink, in: Capsule())
+                }
                 Spacer()
                 Text(">")
                     .font(InkFont.body())
@@ -43,6 +52,25 @@ struct InkRow: View {
             }
             .padding(.vertical, 12)
             .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct InkChoice: View {
+    var title: String
+    var selected: Bool
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(InkFont.body(14))
+                .foregroundStyle(selected ? Palette.paper : Palette.ink)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(selected ? Palette.ink : Palette.paper, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Palette.ink, lineWidth: selected ? 0 : 2))
         }
         .buttonStyle(.plain)
     }

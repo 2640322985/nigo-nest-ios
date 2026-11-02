@@ -2,31 +2,63 @@ import Foundation
 
 struct PlazaPost: Identifiable, Equatable {
     let id: Int
+    var studentId: String
     var nickname: String
     var avatarUrl: String?
     var content: String
     var likeCount: Int
     var commentCount: Int
+    var likedByMe: Bool
+}
+
+struct PlazaComment: Identifiable, Equatable {
+    let id: Int
+    var studentId: String
+    var nickname: String
+    var avatarUrl: String?
+    var content: String
+    var replyName: String
 }
 
 enum PlazaAPI {
     static func load(page: Int, client: APIClient) async throws -> (posts: [PlazaPost], totalPages: Int) {
-        let data = try await client.get("api/posts?page=\(page)&pageSize=10")
-        let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        let rows = object?["posts"] as? [[String: Any]] ?? []
-        let posts = rows.compactMap { row -> PlazaPost? in
-            guard let id = row["id"] as? Int ?? (row["id"] as? NSNumber)?.intValue else { return nil }
-            let avatar = (row["avatarUrl"] as? String) ?? ""
-            return PlazaPost(
+        let data = JSON.object(try await client.get("api/posts?page=\(page)&pageSize=10"))
+        let posts = JSON.dictionaries(data["posts"]).compactMap(post)
+        let totalPages = JSON.int(data["totalPages"], fallback: 1)
+        return (posts, max(totalPages, 1))
+    }
+
+    static func comments(postId: Int, client: APIClient) async throws -> [PlazaComment] {
+        let data = JSON.object(try await client.get("api/posts/\(postId)/comments"))
+        return JSON.dictionaries(data["comments"]).compactMap { row in
+            let id = JSON.int(row["id"])
+            guard id > 0 else { return nil }
+            let reply = row["replyTo"] as? [String: Any]
+            let avatar = JSON.string(row["avatarUrl"])
+            return PlazaComment(
                 id: id,
-                nickname: (row["nickname"] as? String) ?? "同学",
+                studentId: JSON.string(row["studentId"]),
+                nickname: JSON.string(row["nickname"], fallback: "同学"),
                 avatarUrl: avatar.hasPrefix("http") ? avatar : nil,
-                content: (row["content"] as? String) ?? "",
-                likeCount: (row["likeCount"] as? Int) ?? (row["likeCount"] as? NSNumber)?.intValue ?? 0,
-                commentCount: (row["commentCount"] as? Int) ?? (row["commentCount"] as? NSNumber)?.intValue ?? 0
+                content: JSON.string(row["content"]),
+                replyName: JSON.string(reply?["nickname"])
             )
         }
-        let totalPages = (object?["totalPages"] as? Int) ?? (object?["totalPages"] as? NSNumber)?.intValue ?? 1
-        return (posts, max(totalPages, 1))
+    }
+
+    private static func post(_ row: [String: Any]) -> PlazaPost? {
+        let id = JSON.int(row["id"])
+        guard id > 0 else { return nil }
+        let avatar = JSON.string(row["avatarUrl"])
+        return PlazaPost(
+            id: id,
+            studentId: JSON.string(row["studentId"]),
+            nickname: JSON.string(row["nickname"], fallback: "同学"),
+            avatarUrl: avatar.hasPrefix("http") ? avatar : nil,
+            content: JSON.string(row["content"]),
+            likeCount: JSON.int(row["likeCount"]),
+            commentCount: JSON.int(row["commentCount"]),
+            likedByMe: JSON.bool(row["likedByMe"])
+        )
     }
 }

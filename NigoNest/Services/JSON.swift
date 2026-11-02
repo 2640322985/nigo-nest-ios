@@ -47,7 +47,8 @@ enum AppRoute: Hashable {
     case yx
     case safety
     case friends
-    case chat(String, String)
+    case chat(String, String, String)
+    case user(String)
     case notifications
     case suggestions
     case checkin

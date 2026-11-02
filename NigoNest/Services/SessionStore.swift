@@ -46,6 +46,17 @@ final class SessionStore: ObservableObject {
         }
     }
 
+    func apply(name: String? = nil, nickname: String? = nil, avatarUrl: String? = nil) {
+        guard var next = user else { return }
+        if let name { next.name = name }
+        if let nickname { next.nickname = nickname }
+        if let avatarUrl { next.avatarUrl = avatarUrl.hasPrefix("http") ? avatarUrl : nil }
+        user = next
+        if let encoded = try? JSONEncoder().encode(next) {
+            UserDefaults.standard.set(encoded, forKey: key)
+        }
+    }
+
     func logout() {
         user = nil
         UserDefaults.standard.removeObject(forKey: key)

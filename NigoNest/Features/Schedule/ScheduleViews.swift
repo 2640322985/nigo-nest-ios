@@ -84,9 +84,8 @@ struct ScheduleView: View {
             xqm = JSON.string(schedule["xqm"])
             term = JSON.string(schedule["termLabel"])
             var notes: [String: String] = [:]
-            if !xnm.isEmpty {
-                let noteData = JSON.object(try await session.client.get("api/schedule/notes?xnm=\(xnm)&xqm=\(xqm)"))
-                for row in JSON.dictionaries(noteData["notes"]) {
+            if !xnm.isEmpty, let noteRaw = try? await session.client.get("api/schedule/notes?xnm=\(xnm)&xqm=\(xqm)") {
+                for row in JSON.dictionaries(JSON.object(noteRaw)["notes"]) {
                     notes[JSON.string(row["courseKey"])] = JSON.string(row["text"])
                 }
             }

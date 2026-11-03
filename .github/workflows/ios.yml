@@ -24,6 +24,7 @@ jobs:
           set -o pipefail
           xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic build | tee build.log
       - name: Capture production views with local demonstration data
+        timeout-minutes: 6
         run: bash scripts/capture-ios.sh
       - name: Run navigation UI tests
         run: |

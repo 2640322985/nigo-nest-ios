@@ -38,6 +38,10 @@ final class SessionStore: ObservableObject {
     init() {
         guard let data = UserDefaults.standard.data(forKey: key),
               let saved = try? JSONDecoder().decode(SessionUser.self, from: data) else { return }
+        guard saved.token != "local-ui-preview" else {
+            UserDefaults.standard.removeObject(forKey: key)
+            return
+        }
         user = saved
     }
 
@@ -73,13 +77,15 @@ final class SessionStore: ObservableObject {
         if let nickname { next.nickname = nickname }
         if let avatarUrl { next.avatarUrl = avatarUrl.hasPrefix("http") ? avatarUrl : nil }
         user = next
+        guard !isPreview else { return }
         if let encoded = try? JSONEncoder().encode(next) {
             UserDefaults.standard.set(encoded, forKey: key)
         }
     }
 
     func logout() {
+        let wasPreview = isPreview
         user = nil
-        UserDefaults.standard.removeObject(forKey: key)
+        if !wasPreview { UserDefaults.standard.removeObject(forKey: key) }
     }
 }

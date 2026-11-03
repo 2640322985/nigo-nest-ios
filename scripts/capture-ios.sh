@@ -32,4 +32,8 @@ for appearance in light dark; do
     done
   done
 done
+xcrun simctl launch --terminate-running-process "$UDID" com.nigo.nest -AppleLanguages '(zh-Hans)' -AppleLocale zh_CN
+sleep 10
+xcrun simctl io "$UDID" screenshot screenshots/production-login.png
+swift scripts/check-screenshot.swift screenshots/production-login.png
 printf '\nSource: OS screenshots of compiled production SwiftUI views with local demonstration data.\nDevice: iPhone 17 / iOS 27.0 SIMULATOR, not a physical iPhone.\n' >> screenshots/environment.txt

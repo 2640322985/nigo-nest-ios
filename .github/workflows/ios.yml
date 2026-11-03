@@ -31,13 +31,14 @@ jobs:
         timeout-minutes: 18
         run: |
           set -o pipefail
-          xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' -parallel-testing-enabled NO -maximum-concurrent-test-simulator-destinations 1 -derivedDataPath build -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic test | tee tests.log
+          UDID=$(xcrun simctl create nigo-ui 'iPhone 17' com.apple.CoreSimulator.SimRuntime.iOS-27-1)
+          xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination "platform=iOS Simulator,id=$UDID" -parallel-testing-enabled NO -maximum-concurrent-test-simulator-destinations 1 -derivedDataPath build -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic test | tee tests.log
       - name: Export screenshot attachments and test results
         if: always()
         run: |
           mkdir -p screenshots
           xcodebuild -version > screenshots/environment.txt
-          printf '\nSource: native XCUIScreen screenshots of production SwiftUI views.\nData: local demonstration fixtures. Device: iPhone 17 SIMULATOR, not physical iPhone.\n' >> screenshots/environment.txt
+          printf '\nSource: native XCUIScreen screenshots of production SwiftUI views.\nData: local demonstration fixtures. Device: iPhone 17 SIMULATOR / iOS 27.1, not physical iPhone.\n' >> screenshots/environment.txt
           if [ -d TestResults.xcresult ]; then
             xcrun xcresulttool export attachments --path TestResults.xcresult --output-path screenshots
             xcrun xcresulttool get test-results summary --path TestResults.xcresult > screenshots/test-summary.json

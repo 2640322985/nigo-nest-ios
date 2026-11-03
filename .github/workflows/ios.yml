@@ -23,6 +23,7 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_STYLE=Automatic \
             build
 
       - name: Boot a simulator and capture the pages

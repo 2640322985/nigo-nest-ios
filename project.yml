@@ -21,7 +21,9 @@ targets:
         PRODUCT_NAME: 泥工小窝
         INFOPLIST_FILE: NigoNest/Info.plist
         GENERATE_INFOPLIST_FILE: NO
-        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "Apple Distribution"
+        PROVISIONING_PROFILE_SPECIFIER: "NigoNest App Store"
         MARKETING_VERSION: "1.1.0"
         CURRENT_PROJECT_VERSION: "1"
         CODE_SIGN_ENTITLEMENTS: NigoNest/NigoNest.entitlements
@@ -40,6 +42,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.nigo.nest.widget
         INFOPLIST_FILE: Widgets/Info.plist
         GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "Apple Distribution"
+        PROVISIONING_PROFILE_SPECIFIER: "NigoNest Widget App Store"
         CODE_SIGN_ENTITLEMENTS: Widgets/Widget.entitlements
         MARKETING_VERSION: "1.1.0"
         CURRENT_PROJECT_VERSION: "1"

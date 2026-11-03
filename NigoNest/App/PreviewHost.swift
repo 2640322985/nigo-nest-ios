@@ -1,151 +1,62 @@
+#if DEBUG
 import SwiftUI
 
+// Production views, local transport. No duplicate screenshot-only screens.
 struct PreviewHost: View {
     var page: String
-
-    var body: some View {
+    @StateObject private var session = SessionStore(preview: true)
+    private var selection: Int {
         switch page {
-        case "plaza":
-            PreviewTabs(selection: 0)
-        case "profile":
-            PreviewTabs(selection: 1)
-        case "back":
-            BackSample()
-        default:
-            LoginView()
-                .environmentObject(SessionStore())
+        case "plaza": 1
+        case "messages": 2
+        case "profile": 3
+        default: 0
         }
     }
-}
-
-private struct PreviewTabs: View {
-    var selection: Int
-
     var body: some View {
-        TabView(selection: .constant(selection)) {
-            Tab("广场", systemImage: "bubble.left.and.bubble.right", value: 0) {
-                PlazaSample()
-            }
-            Tab("我的", systemImage: "person", value: 1) {
-                ProfileSample()
-            }
-        }
+        Group {
+            if page == "login" { LoginView() }
+            else if page == "schedule" { CampusNavigation { ScheduleView() } }
+            else if page == "themes" { CampusNavigation { ThemeSettingsView() } }
+            else { RootView(initialTab: selection) }
+        }.environmentObject(session)
     }
 }
 
-private struct BackSample: View {
-    @State private var path = [0]
-
-    var body: some View {
-        NavigationStack(path: $path) {
-            PlazaSample()
-                .navigationTitle("广场")
-                .navigationDestination(for: Int.self) { _ in
-                    PageScaffold(title: "课表") {
-                        Text("2026-2027 第一学期").font(InkFont.body(14))
-                        Text("周一").font(InkFont.title(20))
-                        HStack(alignment: .top, spacing: 10) {
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Palette.course[0])
-                                .frame(width: 4, height: 52)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("高等数学").font(InkFont.title(18))
-                                Text("1-2 节  博学楼 A203").font(InkFont.body(14))
-                                Text("带计算器").font(InkFont.body(14))
-                            }
-                        }
-                    }
-                }
+enum PreviewFixtures {
+    static var courses: [CampusCourse] {
+        [
+            CampusCourse(id: "math", name: "高等数学", weekday: 2, start: 1, end: 2, place: "同和楼 A203", teacher: "陈老师", noteKey: "math", note: "带上练习册"),
+            CampusCourse(id: "english", name: "大学英语", weekday: 2, start: 3, end: 4, place: "厚学楼 B305", teacher: "李老师", noteKey: "english", note: ""),
+            CampusCourse(id: "physics", name: "大学物理", weekday: 2, start: 5, end: 6, place: "弘毅楼 C102", teacher: "王老师", noteKey: "physics", note: "")
+        ]
+    }
+    static func response(_ request: URLRequest) throws -> Data {
+        let path = request.url?.path ?? ""
+        let object: [String: Any]
+        switch path {
+        case "/api/posts":
+            object = ["totalPages": 1, "posts": [
+                ["id": 1, "studentId": "20260002", "nickname": "昨天的风", "content": "今天的校园好适合散步，下课一起走走吗？", "likeCount": 24, "commentCount": 6],
+                ["id": 2, "studentId": "20260001", "nickname": "小林同学", "content": "同和楼有安静的空教室吗？下午想找个地方复习。", "likeCount": 12, "commentCount": 3],
+                ["id": 3, "studentId": "20260003", "nickname": "阿澈", "content": "晚上有同学一起打羽毛球吗？", "likeCount": 8, "commentCount": 2]
+            ]]
+        case "/api/checkin":
+            object = ["points": 128, "streak": 7, "checkedInToday": request.httpMethod == "POST", "nextAward": 5, "awarded": 5]
+        case "/api/user/me":
+            object = ["name": "小林同学", "nickname": "小林同学", "wornTitle": ["text": "校园常驻"]]
+        case "/api/app/features":
+            object = ["features": ["emptyClassroom": true, "courseGrab": true, "yxExam": true, "safetyExam": true]]
+        case "/api/friends/unread-count": object = ["unreadCount": 2]
+        case "/api/notifications/unread-count": object = ["unreadCount": 5]
+        case "/api/friends":
+            object = ["friends": [["studentId": "20260003", "nickname": "阿澈", "lastMessage": "晚上一起打羽毛球吗？", "unreadCount": 2]], "incoming": []]
+        case "/api/notifications":
+            object = ["notifications": [["id": 1, "title": "昨天的风赞了你的动态", "content": "同和楼有安静的空教室吗？", "type": "like", "read": false]]]
+        case "/api/app/version": object = [:]
+        default: throw APIError.message("演示模式不连接服务器；此操作请登录真实账号后使用。")
         }
+        return try JSONSerialization.data(withJSONObject: object)
     }
 }
-
-private struct PlazaSample: View {
-    private let posts: [(String, String, Int, Int)] = [
-        ("薄凉", "今天下午机房空着，需要自习的同学可以去。", 1, 0),
-        ("王瑞严父", "课表备注很好用。", 0, 0)
-    ]
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    InkTitle(text: "广场", size: 34)
-                    Spacer()
-                    Text("发帖").font(InkFont.body())
-                }
-                .padding(.bottom, 12)
-                ForEach(Array(posts.enumerated()), id: \.offset) { _, post in
-                    HStack(alignment: .top, spacing: 12) {
-                        InkAvatar(size: 44)
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(post.0).font(InkFont.title(18))
-                            Text(post.1).font(InkFont.body())
-                            HStack(spacing: 16) {
-                                Text("赞 \(post.2)")
-                                Text("评论 \(post.3)")
-                            }
-                            .font(InkFont.body(14))
-                        }
-                    }
-                    .padding(.vertical, 8)
-                    WavyDivider()
-                }
-            }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .background(Palette.paper)
-    }
-}
-
-private struct ProfileSample: View {
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    InkTitle(text: "我的", size: 34)
-                    Spacer()
-                    Text("分享").font(InkFont.body())
-                }
-                HStack(alignment: .center, spacing: 14) {
-                    InkAvatar(size: 64)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("薄凉").font(InkFont.title(20))
-                        Text("同学").font(InkFont.body(14))
-                        Text("账号资料").font(InkFont.body(13))
-                    }
-                }
-                .padding(.top, 16)
-                WavyDivider()
-                Text("每日签到").font(InkFont.body(13)).padding(.top, 8)
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("我的积分").font(InkFont.body(13))
-                        Text("128").font(InkFont.title(36))
-                        Text("今日签到 +6").font(InkFont.body(13))
-                        Text("连续 3 天").font(InkFont.body(13))
-                    }
-                    Spacer()
-                    Button("签到") {}
-                        .officialAction()
-                }
-                .padding(.vertical, 8)
-                InkRow(title: "积分排行榜") {}
-                WavyDivider()
-                Text("教务").font(InkFont.body(13))
-                InkRow(title: "课表") {}
-                InkRow(title: "空教室") {}
-                InkRow(title: "场馆预约") {}
-                WavyDivider()
-                Text("广场").font(InkFont.body(13))
-                InkRow(title: "好友", badge: 2) {}
-                InkRow(title: "消息通知", badge: 5) {}
-                InkRow(title: "我的动态") {}
-            }
-            .padding(24)
-            .foregroundStyle(Palette.ink)
-        }
-        .background(Palette.paper)
-    }
-}
+#endif

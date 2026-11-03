@@ -1,25 +1,59 @@
 import SwiftUI
 
 struct RootView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
-    @StateObject private var nav = AppNav()
     @State private var tab = 0
+
+    init(initialTab: Int = 0) { _tab = State(initialValue: initialTab) }
 
     var body: some View {
         Group {
             if session.user == nil {
                 LoginView()
             } else {
-                NavigationStack(path: $nav.path) {
                     TabView(selection: $tab) {
-                        Tab("广场", systemImage: "bubble.left.and.bubble.right", value: 0) {
-                            PlazaView()
+                        Tab("今日", systemImage: "sun.max", value: 0) {
+                            CampusNavigation { TodayView() }
                         }
-                        Tab("我的", systemImage: "person", value: 1) {
-                            ProfileView()
+                        Tab("广场", systemImage: "bubble.left.and.bubble.right", value: 1) {
+                            CampusNavigation { PlazaView() }
+                        }
+                        Tab("消息", systemImage: "tray", value: 2) {
+                            CampusNavigation { MessageHubView() }
+                        }
+                        Tab("我的", systemImage: "person", value: 3) {
+                            CampusNavigation { ProfileView() }
                         }
                     }
-                    .navigationDestination(for: AppRoute.self) { route in
+                }
+        }
+        .background(ThemePaper())
+    }
+}
+
+extension View {
+    func routeDestinations() -> some View {
+        self.modifier(RouteDestinations())
+    }
+}
+
+struct CampusNavigation<Content: View>: View {
+    @ThemePalette private var palette
+    @StateObject private var nav = AppNav()
+    @ViewBuilder var content: () -> Content
+    var body: some View {
+        NavigationStack(path: $nav.path) { content().routeDestinations() }
+            .environmentObject(nav)
+    }
+}
+
+private struct RouteDestinations: ViewModifier {
+    @ThemePalette private var palette
+    @EnvironmentObject private var nav: AppNav
+    func body(content: Content) -> some View {
+        content
+            .navigationDestination(for: AppRoute.self) { route in
                         switch route {
                         case .schedule: ScheduleView()
                         case .classroom: ClassroomView()
@@ -39,13 +73,9 @@ struct RootView: View {
                         case .compose: ComposeView()
                         case .mine: MyContentView()
                         case .account: AccountView()
+                        case .themes: ThemeSettingsView()
                         case .post(let id): PostDetailView(postId: id)
                         }
                     }
-                }
-                .environmentObject(nav)
-            }
-        }
-        .background(Palette.paper)
     }
 }

@@ -9,6 +9,7 @@ private struct Person: Identifiable {
 }
 
 struct FriendsView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @EnvironmentObject private var nav: AppNav
     @State private var friends: [Person] = []
@@ -31,7 +32,7 @@ struct FriendsView: View {
                         Button("同意") { Task { await accept(item.id) } }
                         Button("拒绝") { Task { await reject(item.id) } }
                     }
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(palette.ink)
                 }
                 WavyDivider()
             }
@@ -54,12 +55,12 @@ struct FriendsView: View {
                         if item.unread > 0 {
                             Text("\(item.unread)")
                                 .font(InkFont.body(12))
-                                .foregroundStyle(Palette.paper)
+                                .foregroundStyle(palette.paper)
                                 .padding(.horizontal, 6)
-                                .background(Palette.ink, in: Capsule())
+                                .background(palette.ink, in: Capsule())
                         }
                     }
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(palette.ink)
                 }
                 .buttonStyle(.plain)
                 WavyDivider()
@@ -130,6 +131,7 @@ struct FriendsView: View {
 }
 
 struct UserProfileView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @EnvironmentObject private var nav: AppNav
     var studentId: String
@@ -206,6 +208,7 @@ private struct ChatLine: Identifiable {
 }
 
 struct ChatView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     var studentId: String
     var nickname: String
@@ -224,9 +227,9 @@ struct ChatView: View {
                     Text(line.text)
                         .font(InkFont.body())
                         .padding(10)
-                        .background(line.mine ? Palette.ink : Palette.paper, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .foregroundStyle(line.mine ? Palette.paper : Palette.ink)
-                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Palette.ink, lineWidth: line.mine ? 0 : 2))
+                        .background(line.mine ? palette.ink : palette.paper, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .foregroundStyle(line.mine ? palette.paper : palette.ink)
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(palette.ink, lineWidth: line.mine ? 0 : 2))
                     if !line.mine { Spacer(minLength: 40) }
                     if line.mine { InkAvatar(url: session.user?.avatarUrl, size: 32) }
                 }
@@ -270,6 +273,7 @@ struct ChatView: View {
 }
 
 struct ComposeView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @Environment(\.dismiss) private var dismiss
     @State private var text = ""
@@ -297,6 +301,7 @@ struct ComposeView: View {
 }
 
 struct MyContentView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var posts: [PlazaPost] = []
     @State private var comments: [String] = []
@@ -310,7 +315,7 @@ struct MyContentView: View {
                 Text(post.content).font(InkFont.body())
                 Button("删除") { Task { await deletePost(post.id) } }
                     .font(InkFont.body(14))
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(palette.ink)
                 WavyDivider()
             }
             Text("评论").font(InkFont.title(18))
@@ -357,6 +362,7 @@ struct MyContentView: View {
 }
 
 struct PostDetailView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     var postId: Int
     @State private var comments: [PlazaComment] = []

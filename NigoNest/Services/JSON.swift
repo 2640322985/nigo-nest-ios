@@ -56,6 +56,7 @@ enum AppRoute: Hashable {
     case compose
     case mine
     case account
+    case themes
     case post(Int)
 }
 

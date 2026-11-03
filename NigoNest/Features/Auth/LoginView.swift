@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LoginView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var studentId = ""
     @State private var password = ""
@@ -12,18 +13,18 @@ struct LoginView: View {
             VStack(alignment: .leading, spacing: 28) {
                 HStack {
                     Spacer()
-                    StreetCat()
+                    CampusArtwork(name: "CampusReading").frame(width: 100, height: 125)
                 }
                 InkTitle(text: "泥工小窝", size: 40)
                 Text("用学校账号登录")
                     .font(InkFont.body())
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(palette.ink)
                 field("学号", text: $studentId)
                 field("密码", text: $password, secure: true)
                 if !error.isEmpty {
                     Text(error)
                         .font(InkFont.body(14))
-                        .foregroundStyle(Palette.ink)
+                        .foregroundStyle(palette.ink)
                 }
                 Button(busy ? "登录中" : "登录") {
                     Task { await submit() }
@@ -34,7 +35,7 @@ struct LoginView: View {
             .padding(28)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Palette.paper)
+        .background(ThemePaper())
     }
 
     private func field(_ title: String, text: Binding<String>, secure: Bool = false) -> some View {
@@ -52,7 +53,8 @@ struct LoginView: View {
             }
             .font(InkFont.body())
             .padding(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.ink, lineWidth: 3))
+            .background(palette.surface, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(palette.rule, lineWidth: 1))
         }
     }
 

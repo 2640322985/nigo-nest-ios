@@ -1,18 +1,9 @@
 import SwiftUI
 
-private struct CourseItem: Identifiable {
-    var id: String
-    var name: String
-    var weekday: Int
-    var start: Int
-    var end: Int
-    var place: String
-    var teacher: String
-    var noteKey: String
-    var note: String
-}
+private typealias CourseItem = CampusCourse
 
 struct ScheduleView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var courses: [CourseItem] = []
     @State private var term = ""
@@ -38,7 +29,7 @@ struct ScheduleView: View {
                     ForEach(rows) { course in
                         HStack(alignment: .top, spacing: 10) {
                             RoundedRectangle(cornerRadius: 2)
-                                .fill(Palette.course[(course.start - 1) % Palette.course.count])
+                                .fill(palette.course[(course.start - 1) % palette.course.count])
                                 .frame(width: 4)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(course.name).font(InkFont.title(18))
@@ -70,6 +61,16 @@ struct ScheduleView: View {
                 }
             }
         }
+        .task {
+            courses = CampusSchedule.load(student: session.user?.studentId ?? "")
+            let metadata = UserDefaults.standard.dictionary(forKey: CampusSchedule.key(session.user?.studentId ?? "") + ".metadata") ?? [:]
+            term = metadata["term"] as? String ?? ""
+            xnm = metadata["xnm"] as? String ?? ""
+            xqm = metadata["xqm"] as? String ?? ""
+            #if DEBUG
+            if session.isPreview { courses = PreviewFixtures.courses; term = "2026–2027 秋季学期 · 演示" }
+            #endif
+        }
     }
 
     private func importSchedule() async {
@@ -83,6 +84,9 @@ struct ScheduleView: View {
             xnm = JSON.string(schedule["xnm"])
             xqm = JSON.string(schedule["xqm"])
             term = JSON.string(schedule["termLabel"])
+            if !session.isPreview {
+                UserDefaults.standard.set(["term": term, "xnm": xnm, "xqm": xqm], forKey: CampusSchedule.key(session.user?.studentId ?? "") + ".metadata")
+            }
             var notes: [String: String] = [:]
             if !xnm.isEmpty, let noteRaw = try? await session.client.get("api/schedule/notes?xnm=\(xnm)&xqm=\(xqm)") {
                 for row in JSON.dictionaries(JSON.object(noteRaw)["notes"]) {
@@ -110,6 +114,7 @@ struct ScheduleView: View {
                 )
             }
             publishWidget()
+            if !session.isPreview { CampusSchedule.save(courses, student: session.user?.studentId ?? "") }
             error = courses.isEmpty ? "这个学期没有课程" : ""
         } catch {
             self.error = error.localizedDescription
@@ -130,6 +135,7 @@ struct ScheduleView: View {
                 courses[index].note = note
             }
             publishWidget()
+            if !session.isPreview { CampusSchedule.save(courses, student: session.user?.studentId ?? "") }
             error = note.isEmpty ? "已清除" : "备注已保存"
         } catch {
             self.error = error.localizedDescription
@@ -155,6 +161,7 @@ private struct Choice: Identifiable, Hashable {
 }
 
 struct ClassroomView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var campuses: [Choice] = []
     @State private var buildings: [Choice] = []

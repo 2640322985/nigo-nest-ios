@@ -6,12 +6,12 @@ extension View {
     func officialAction(prominent: Bool = true) -> some View {
         if #available(iOS 26, *) {
             if prominent {
-                self.buttonStyle(.glassProminent).controlSize(.large)
+                self.buttonStyle(.glassProminent).controlSize(.large).foregroundStyle(Palette.paper)
             } else {
                 self.buttonStyle(.glass).controlSize(.large)
             }
         } else if prominent {
-            self.buttonStyle(.borderedProminent).controlSize(.large)
+            self.buttonStyle(.borderedProminent).controlSize(.large).foregroundStyle(Palette.paper)
         } else {
             self.buttonStyle(.bordered).controlSize(.large)
         }

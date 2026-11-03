@@ -22,8 +22,14 @@ xcrun simctl install "$UDID" "$APP"
 for appearance in light dark; do
   for page in today plaza profile; do
     xcrun simctl launch --terminate-running-process "$UDID" com.nigo.nest -preview "$page" -previewAppearance "$appearance" -AppleLanguages '(zh-Hans)' -AppleLocale zh_CN
-    sleep 4
-    xcrun simctl io "$UDID" screenshot "screenshots/${page}-${appearance}.png"
+    sleep 10
+    SHOT="screenshots/${page}-${appearance}.png"
+    for attempt in 1 2 3; do
+      xcrun simctl io "$UDID" screenshot "$SHOT"
+      if swift scripts/check-screenshot.swift "$SHOT"; then break; fi
+      if [ "$attempt" = 3 ]; then exit 1; fi
+      sleep 10
+    done
   done
 done
 printf '\nSource: OS screenshots of compiled production SwiftUI views with local demonstration data.\nDevice: iPhone 17 / iOS 27.0 SIMULATOR, not a physical iPhone.\n' >> screenshots/environment.txt

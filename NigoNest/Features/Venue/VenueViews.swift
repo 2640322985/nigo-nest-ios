@@ -34,6 +34,7 @@ private struct BuddyPick: Identifiable {
 }
 
 struct VenueView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @EnvironmentObject private var nav: AppNav
     @State private var campuses: [CampusPick] = []
@@ -59,7 +60,7 @@ struct VenueView: View {
                 Button("同伴管理") { nav.open(.buddies) }
             }
             .font(InkFont.body())
-            .foregroundStyle(Palette.ink)
+            .foregroundStyle(palette.ink)
             StatusText(text: error)
             if !notice.isEmpty { Text(notice).font(InkFont.body(14)) }
             Text("校区").font(InkFont.body(13))
@@ -105,7 +106,7 @@ struct VenueView: View {
             ForEach(slots) { slot in
                 Button(slot.label) { Task { await book(slot) } }
                     .font(InkFont.body())
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(palette.ink)
                     .disabled(!slot.free)
                     .padding(.vertical, 6)
                 WavyDivider()
@@ -243,6 +244,7 @@ struct VenueView: View {
 }
 
 struct VenueOrdersView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var rows: [(title: String, trade: String, canPay: Bool)] = []
     @State private var error = ""
@@ -296,6 +298,7 @@ struct VenueOrdersView: View {
 }
 
 struct BuddiesView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var rows: [(id: String, title: String)] = []
     @State private var uid = ""
@@ -313,7 +316,7 @@ struct BuddiesView: View {
                     Text(row.title).font(InkFont.body())
                     Spacer()
                     Button("删除") { Task { await remove(row.id) } }
-                        .foregroundStyle(Palette.ink)
+                        .foregroundStyle(palette.ink)
                 }
                 WavyDivider()
             }

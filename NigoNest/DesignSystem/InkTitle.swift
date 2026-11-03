@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct InkTitle: View {
+    @ThemePalette private var palette
     var text: String
     var size: CGFloat = 36
 
@@ -8,9 +9,9 @@ struct InkTitle: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(text)
                 .font(.custom("MaShanZheng-Regular", size: size, relativeTo: .title))
-            .foregroundStyle(Palette.ink)
+            .foregroundStyle(palette.ink)
             WobblyUnderline()
-                .stroke(Palette.ink, style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+                .stroke(palette.isJournal ? palette.accent : palette.ink, style: StrokeStyle(lineWidth: palette.isJournal ? 2 : 1.5, lineCap: .round))
                 .frame(width: min(size * 4.5, 180), height: 5)
         }
     }
@@ -35,8 +36,9 @@ struct WobblyUnderline: Shape {
 }
 
 struct WavyDivider: View {
+    @ThemePalette private var palette
     var body: some View {
-        Rectangle().fill(Palette.rule).frame(height: 0.5).padding(.vertical, 14)
+        Rectangle().fill(palette.rule).frame(height: 0.5).padding(.vertical, 14)
     }
 }
 

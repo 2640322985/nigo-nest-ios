@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PageScaffold<Content: View>: View {
+    @ThemePalette private var palette
     var title: String
     @ViewBuilder var content: () -> Content
 
@@ -13,7 +14,7 @@ struct PageScaffold<Content: View>: View {
             .padding(24)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Palette.paper)
+        .background(ThemePaper())
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
@@ -21,17 +22,19 @@ struct PageScaffold<Content: View>: View {
 }
 
 struct StatusText: View {
+    @ThemePalette private var palette
     var text: String
     var body: some View {
         if text.isEmpty {
             EmptyView()
         } else {
-            Text(text).font(InkFont.body(14)).foregroundStyle(Palette.ink)
+            Text(text).font(InkFont.body(14)).foregroundStyle(palette.ink)
         }
     }
 }
 
 struct CheckinView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @EnvironmentObject private var nav: AppNav
     @State private var points = "—"
@@ -73,6 +76,7 @@ struct CheckinView: View {
 }
 
 struct LeaderboardView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var rows: [(rank: Int, name: String, points: Int, mine: Bool)] = []
     @State private var me = ""
@@ -91,7 +95,7 @@ struct LeaderboardView: View {
                     Spacer()
                     Text("\(row.points)").font(InkFont.body())
                 }
-                .foregroundStyle(Palette.ink)
+                .foregroundStyle(palette.ink)
                 WavyDivider()
             }
         }
@@ -114,6 +118,7 @@ struct LeaderboardView: View {
 }
 
 struct SuggestionsView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var text = ""
     @State private var rows: [String] = []
@@ -124,7 +129,7 @@ struct SuggestionsView: View {
             TextField("想加什么功能", text: $text, axis: .vertical)
                 .font(InkFont.body())
                 .padding(12)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.ink, lineWidth: 3))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(palette.ink, lineWidth: 3))
             InkButton(title: "提交建议") { Task { await send() } }
             StatusText(text: error)
             ForEach(rows, id: \.self) { row in
@@ -169,6 +174,7 @@ private struct NoteItem: Identifiable {
 }
 
 struct NotificationsView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @EnvironmentObject private var nav: AppNav
     @State private var rows: [NoteItem] = []

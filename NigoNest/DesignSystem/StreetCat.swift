@@ -2,9 +2,10 @@ import SwiftUI
 
 /// 页头点缀。圆头、圆肩、无五官，只有一个黑点。
 struct StreetCat: View {
+    @ThemePalette private var palette
     var body: some View {
         Canvas { context, size in
-            let ink = GraphicsContext.Shading.color(Palette.ink)
+            let ink = GraphicsContext.Shading.color(palette.ink)
             var head = Path(ellipseIn: CGRect(x: size.width * 0.28, y: 0, width: size.width * 0.44, height: size.width * 0.44))
             context.stroke(head, with: ink, style: StrokeStyle(lineWidth: 5, lineCap: .round))
             var body = Path(ellipseIn: CGRect(x: size.width * 0.12, y: size.height * 0.38, width: size.width * 0.76, height: size.height * 0.5))

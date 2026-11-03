@@ -3,6 +3,7 @@ import SwiftUI
 private typealias CourseItem = CampusCourse
 
 struct ScheduleView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var courses: [CourseItem] = []
     @State private var term = ""
@@ -28,7 +29,7 @@ struct ScheduleView: View {
                     ForEach(rows) { course in
                         HStack(alignment: .top, spacing: 10) {
                             RoundedRectangle(cornerRadius: 2)
-                                .fill(Palette.course[(course.start - 1) % Palette.course.count])
+                                .fill(palette.course[(course.start - 1) % palette.course.count])
                                 .frame(width: 4)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(course.name).font(InkFont.title(18))
@@ -160,6 +161,7 @@ private struct Choice: Identifiable, Hashable {
 }
 
 struct ClassroomView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var campuses: [Choice] = []
     @State private var buildings: [Choice] = []

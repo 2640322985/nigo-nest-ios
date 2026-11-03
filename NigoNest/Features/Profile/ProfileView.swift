@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @EnvironmentObject private var nav: AppNav
     @State private var points = "—"
@@ -30,7 +31,7 @@ struct ProfileView: View {
                         }
                         Spacer()
                         Image(systemName: "chevron.right").font(.caption).foregroundStyle(.secondary)
-                    }.foregroundStyle(Palette.ink).contentShape(Rectangle())
+                    }.foregroundStyle(palette.ink).contentShape(Rectangle())
                 }.buttonStyle(.plain)
                 pointsCard
                 CampusGroup {
@@ -43,6 +44,8 @@ struct ProfileView: View {
                     CampusLink(title: "同伴管理", icon: "person.2.wave.2") { nav.open(.buddies) }
                 }
                 CampusGroup {
+                    CampusLink(title: "主题外观", icon: "paintpalette", detail: palette.theme.title) { nav.open(.themes) }
+                    Divider()
                     DisclosureGroup {
                         InkRow(title: "课表") { nav.open(.schedule) }
                         if features.emptyClassroom { InkRow(title: "空教室") { nav.open(.classroom) } }
@@ -65,10 +68,11 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity).padding(.bottom, 8)
             }.padding(20)
         }
-        .background(Palette.paper)
+        .background(ThemePaper())
         .navigationTitle("我的小窝").navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button("主题外观", systemImage: "paintpalette") { nav.open(.themes) }
                 if let shareURL { ShareLink(item: shareURL) { Image(systemName: "square.and.arrow.up") } }
             }
         }
@@ -80,6 +84,7 @@ struct ProfileView: View {
             HStack(spacing: 15) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(points).font(.system(size: 34, weight: .bold, design: .rounded))
+                        .foregroundStyle(palette.isJournal ? palette.accent : palette.ink)
                     Text("积分").font(.caption)
                 }
                 Spacer()
@@ -92,8 +97,8 @@ struct ProfileView: View {
                         }
                         .font(.system(size: 14, weight: .semibold))
                         .padding(.horizontal, 13).padding(.vertical, 8)
-                        .foregroundStyle(checkedIn ? Palette.ink : Palette.paper)
-                        .background(checkedIn ? Palette.surface : Palette.ink, in: RoundedRectangle(cornerRadius: 9))
+                        .foregroundStyle(checkedIn ? palette.ink : palette.onAccent)
+                        .background(checkedIn ? palette.surface : palette.accent, in: RoundedRectangle(cornerRadius: 9))
                         .frame(minHeight: 44)
                     }
                     .buttonStyle(.plain).disabled(checkedIn || signing)
@@ -103,7 +108,9 @@ struct ProfileView: View {
                 }.accessibilityLabel("积分排行榜")
             }
             if !notice.isEmpty { Text(notice).font(.caption).foregroundStyle(.secondary) }
-        }.padding(15).overlay(RoundedRectangle(cornerRadius: 16).stroke(Palette.ink, lineWidth: 1))
+        }.padding(15).background(palette.note, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(palette.ink, lineWidth: 1))
+            .overlay(alignment: .topLeading) { if palette.isJournal { JournalTape() } }
     }
 
     private var displayName: String {

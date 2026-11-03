@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PlazaView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @EnvironmentObject private var nav: AppNav
     @State private var posts: [PlazaPost] = []
@@ -22,6 +23,7 @@ struct PlazaView: View {
                     .padding(.bottom, 12)
                 Text(session.isPreview ? "同学们的校园日常 · 演示数据" : "同学们的校园日常")
                     .font(.subheadline).foregroundStyle(.secondary).padding(.bottom, 22)
+                JournalCampusBanner()
                 HStack {
                     Text("最新").font(.subheadline.bold())
                         .padding(.bottom, 8).overlay(alignment: .bottom) { Capsule().frame(width: 24, height: 2) }
@@ -34,18 +36,18 @@ struct PlazaView: View {
                         Text("分享一件校园小事…")
                         Spacer()
                     }.font(.subheadline).foregroundStyle(.secondary).padding(13)
-                        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12))
+                        .background(palette.surface, in: RoundedRectangle(cornerRadius: 12))
                 }.buttonStyle(.plain).padding(.bottom, 18)
                 StatusText(text: error)
                 if loading && posts.isEmpty {
-                    ProgressView().tint(Palette.ink)
+                    ProgressView().tint(palette.ink)
                 }
                 if posts.isEmpty && !loading && error.isEmpty {
                     ContentUnavailableView("广场还很安静", systemImage: "bubble.left", description: Text("分享一件校园小事，认识更多同学。"))
                 }
                 ForEach(posts) { post in
-                    postCard(post)
-                    WavyDivider()
+                    postCard(post).journalPostSurface()
+                    if palette.isJournal { Color.clear.frame(height: 14) } else { WavyDivider() }
                 }
                 HStack {
                     Button("上一页") { Task { await load(page: page - 1) } }
@@ -57,12 +59,12 @@ struct PlazaView: View {
                         .disabled(page >= totalPages || loading)
                 }
                 .font(InkFont.body())
-                .foregroundStyle(Palette.ink)
+                .foregroundStyle(palette.ink)
                 .padding(.top, 8)
             }
             .padding(20)
         }
-        .background(Palette.paper)
+        .background(ThemePaper())
         .navigationTitle("校园广场").navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -82,7 +84,7 @@ struct PlazaView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Button(post.nickname) { nav.open(.user(post.studentId)) }
                     .font(InkFont.title(18))
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(palette.ink)
                 Text(post.content)
                     .font(InkFont.body())
                     .fixedSize(horizontal: false, vertical: true)
@@ -95,7 +97,7 @@ struct PlazaView: View {
                     }
                 }
                 .font(InkFont.body(14))
-                .foregroundStyle(Palette.ink)
+                .foregroundStyle(palette.ink)
                 if openComments == post.id {
                     commentBox(post)
                 }
@@ -128,7 +130,7 @@ struct PlazaView: View {
             TextField("写评论", text: $draft).inkField()
             Button("发送") { Task { await send(post) } }
                 .font(InkFont.body())
-                .foregroundStyle(Palette.ink)
+                .foregroundStyle(palette.ink)
         }
     }
 

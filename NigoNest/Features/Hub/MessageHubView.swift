@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MessageHubView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var nav: AppNav
     @EnvironmentObject private var session: SessionStore
     @State private var friendUnread = 0
@@ -19,7 +20,7 @@ struct MessageHubView: View {
                     .font(.footnote).foregroundStyle(.secondary)
                 CampusArtwork(name: "CampusReading").frame(height: 180).frame(maxWidth: .infinity)
             }.padding(20)
-        }.background(Palette.paper)
+        }.background(ThemePaper())
             .navigationTitle("消息").navigationBarTitleDisplayMode(.inline)
             .task {
                 if let data = try? await session.client.get("api/friends/unread-count") {

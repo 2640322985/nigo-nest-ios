@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var tab = 0
 
@@ -27,7 +28,7 @@ struct RootView: View {
                     }
                 }
         }
-        .background(Palette.paper)
+        .background(ThemePaper())
     }
 }
 
@@ -38,6 +39,7 @@ extension View {
 }
 
 struct CampusNavigation<Content: View>: View {
+    @ThemePalette private var palette
     @StateObject private var nav = AppNav()
     @ViewBuilder var content: () -> Content
     var body: some View {
@@ -47,6 +49,7 @@ struct CampusNavigation<Content: View>: View {
 }
 
 private struct RouteDestinations: ViewModifier {
+    @ThemePalette private var palette
     @EnvironmentObject private var nav: AppNav
     func body(content: Content) -> some View {
         content
@@ -70,6 +73,7 @@ private struct RouteDestinations: ViewModifier {
                         case .compose: ComposeView()
                         case .mine: MyContentView()
                         case .account: AccountView()
+                        case .themes: ThemeSettingsView()
                         case .post(let id): PostDetailView(postId: id)
                         }
                     }

@@ -17,6 +17,7 @@ struct PreviewHost: View {
         Group {
             if page == "login" { LoginView() }
             else if page == "schedule" { CampusNavigation { ScheduleView() } }
+            else if page == "themes" { CampusNavigation { ThemeSettingsView() } }
             else { RootView(initialTab: selection) }
         }.environmentObject(session)
     }

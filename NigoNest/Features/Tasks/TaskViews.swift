@@ -16,6 +16,7 @@ private struct GrabTask: Identifiable {
 }
 
 struct CourseGrabView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var query = ""
     @State private var found: [[String: Any]] = []
@@ -42,7 +43,7 @@ struct CourseGrabView: View {
                         Text(wish.title).font(InkFont.body())
                         Spacer()
                         Button("移除") { wishes.removeAll { $0.id == wish.id } }
-                            .foregroundStyle(Palette.ink)
+                            .foregroundStyle(palette.ink)
                     }
                 }
             }
@@ -84,7 +85,7 @@ struct CourseGrabView: View {
                         }
                     }
                     .font(InkFont.body(14))
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(palette.ink)
                     ForEach(logs[task.id] ?? [], id: \.self) { line in
                         Text(line).font(InkFont.body(13))
                     }
@@ -188,6 +189,7 @@ struct CourseGrabView: View {
 }
 
 struct YxExamView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var papers: [[String: Any]] = []
     @State private var selected = ""
@@ -280,6 +282,7 @@ struct YxExamView: View {
 }
 
 struct SafetyExamView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var sessionId = ""
     @State private var captchaImage = ""
@@ -308,7 +311,7 @@ struct SafetyExamView: View {
                     if !JSON.bool(paper["passed"]) {
                         Button("开始") { Task { await start(JSON.string(paper["id"])) } }
                             .font(InkFont.body())
-                            .foregroundStyle(Palette.ink)
+                            .foregroundStyle(palette.ink)
                     }
                 }
                 WavyDivider()
@@ -402,6 +405,7 @@ private enum CaptchaImage {
 }
 
 struct AccountView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @State private var nickname = ""
     @State private var error = ""

@@ -1,10 +1,15 @@
 import SwiftUI
 
 struct CampusArtwork: View {
+    @ThemePalette private var palette
     var name: String
     @Environment(\.colorScheme) private var scheme
+    @ViewBuilder
     var body: some View {
-        Image(name).resizable().scaledToFit()
+        if palette.isJournal {
+            Image("JournalCat").resizable().scaledToFit().accessibilityHidden(true)
+        } else {
+          Image(name).resizable().scaledToFit()
             .padding(4)
             .background(.white, in: RoundedRectangle(cornerRadius: 12))
             .overlay {
@@ -13,15 +18,20 @@ struct CampusArtwork: View {
                 }
             }
             .accessibilityHidden(true)
+        }
     }
 }
 
 struct CampusSection: View {
+    @ThemePalette private var palette
     var title: String
     var detail: String = ""
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title).font(.custom("MaShanZheng-Regular", size: 25, relativeTo: .title2))
+                .overlay(alignment: .bottomLeading) {
+                    if palette.isJournal { Capsule().fill(palette.accent).frame(width: 26, height: 2).offset(y: 4) }
+                }
             Spacer()
             if !detail.isEmpty { Text(detail).font(.caption).foregroundStyle(.secondary) }
         }
@@ -29,32 +39,39 @@ struct CampusSection: View {
 }
 
 struct CampusLink: View {
+    @ThemePalette private var palette
     var title: String
     var icon: String
     var badge: Int = 0
+    var detail: String = ""
     var action: () -> Void
     var body: some View {
         Button(action: action) {
             HStack(spacing: 13) {
-                Image(systemName: icon).font(.system(size: 19)).frame(width: 25)
+                Image(systemName: icon).font(.system(size: 19)).frame(width: 25).foregroundStyle(palette.isJournal ? palette.blue : palette.ink)
                 Text(title).font(.body)
                 Spacer()
+                if !detail.isEmpty { Text(detail).font(.caption).foregroundStyle(.secondary) }
                 if badge > 0 {
                     Text(badge > 99 ? "99+" : "\(badge)").font(.caption2.bold())
-                        .padding(5).foregroundStyle(Palette.paper)
-                        .background(Palette.ink, in: Capsule())
+                        .padding(5).foregroundStyle(palette.paper)
+                        .background(palette.ink, in: Capsule())
                 }
                 Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
-            }.foregroundStyle(Palette.ink).padding(.vertical, 15).contentShape(Rectangle())
+            }.foregroundStyle(palette.ink).padding(.vertical, 15).contentShape(Rectangle())
         }.buttonStyle(.plain)
     }
 }
 
 struct CampusGroup<Content: View>: View {
+    @ThemePalette private var palette
     @ViewBuilder var content: () -> Content
     var body: some View {
         VStack(spacing: 0) { content() }
             .padding(.horizontal, 15)
-            .background(Palette.surface.opacity(0.65), in: RoundedRectangle(cornerRadius: 16))
+            .background(palette.surface.opacity(0.65), in: RoundedRectangle(cornerRadius: 16))
+            .overlay {
+                if palette.isJournal { RoundedRectangle(cornerRadius: 16).stroke(palette.rule, lineWidth: 0.75) }
+            }
     }
 }

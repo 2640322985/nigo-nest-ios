@@ -21,9 +21,13 @@ APP=$(find build/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' 
 xcrun simctl install "$UDID" "$APP"
 for appearance in light dark; do
   for page in today plaza profile; do
-    xcrun simctl launch --terminate-running-process "$UDID" com.nigo.nest -preview "$page" -previewAppearance "$appearance" -AppleLanguages '(zh-Hans)' -AppleLocale zh_CN
+    if [ "$appearance-$page" = light-today ]; then
+      xcrun simctl launch --terminate-running-process "$UDID" com.nigo.nest -preview "$page" -previewAppearance "$appearance" -persistTheme journal -AppleLanguages '(zh-Hans)' -AppleLocale zh_CN
+    else
+      xcrun simctl launch --terminate-running-process "$UDID" com.nigo.nest -preview "$page" -previewAppearance "$appearance" -AppleLanguages '(zh-Hans)' -AppleLocale zh_CN
+    fi
     sleep 10
-    SHOT="screenshots/${page}-${appearance}.png"
+    SHOT="screenshots/journal-${page}-${appearance}.png"
     for attempt in 1 2 3; do
       xcrun simctl io "$UDID" screenshot "$SHOT"
       if swift scripts/check-screenshot.swift "$SHOT"; then break; fi
@@ -32,6 +36,14 @@ for appearance in light dark; do
     done
   done
 done
+xcrun simctl launch --terminate-running-process "$UDID" com.nigo.nest -preview themes -previewAppearance light -AppleLanguages '(zh-Hans)' -AppleLocale zh_CN
+sleep 10
+xcrun simctl io "$UDID" screenshot screenshots/journal-theme-picker.png
+swift scripts/check-screenshot.swift screenshots/journal-theme-picker.png
+xcrun simctl launch --terminate-running-process "$UDID" com.nigo.nest -preview today -previewTheme monochrome -previewAppearance light -AppleLanguages '(zh-Hans)' -AppleLocale zh_CN
+sleep 10
+xcrun simctl io "$UDID" screenshot screenshots/monochrome-today-light.png
+swift scripts/check-screenshot.swift screenshots/monochrome-today-light.png
 xcrun simctl launch --terminate-running-process "$UDID" com.nigo.nest -AppleLanguages '(zh-Hans)' -AppleLocale zh_CN
 sleep 10
 xcrun simctl io "$UDID" screenshot screenshots/production-login.png

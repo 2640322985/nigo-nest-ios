@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TodayView: View {
+    @ThemePalette private var palette
     @EnvironmentObject private var session: SessionStore
     @EnvironmentObject private var nav: AppNav
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -42,7 +43,7 @@ struct TodayView: View {
                     .frame(maxWidth: .infinity).padding(.vertical, 8)
             }.padding(20)
         }
-        .background(Palette.paper)
+        .background(ThemePaper())
         .navigationTitle("泥工小窝").navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -86,8 +87,13 @@ struct TodayView: View {
                     }
                 }
                 Text("查看完整课表").font(.caption).foregroundStyle(.secondary)
-            }.padding(16).foregroundStyle(Palette.ink)
-                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Palette.ink, lineWidth: 1))
+            }.padding(16).foregroundStyle(palette.ink)
+                .background {
+                    RoundedRectangle(cornerRadius: 18).fill(palette.note)
+                    if palette.isJournal { NotebookLines().clipShape(RoundedRectangle(cornerRadius: 18)) }
+                }
+                .overlay(RoundedRectangle(cornerRadius: 18).stroke(palette.ink, lineWidth: 1))
+                .overlay(alignment: .topLeading) { if palette.isJournal { JournalTape() } }
         }.buttonStyle(.plain)
     }
 
@@ -95,9 +101,10 @@ struct TodayView: View {
         Button { nav.open(route) } label: {
             VStack(spacing: 9) {
                 Image(systemName: icon).font(.system(size: 24, weight: .light))
+                    .foregroundStyle(palette.isJournal ? (route == .schedule || route == .classroom ? palette.blue : palette.accent) : palette.ink)
                 Text(title).font(.caption)
             }.frame(maxWidth: .infinity, minHeight: 58).contentShape(Rectangle())
-        }.buttonStyle(.plain).foregroundStyle(Palette.ink)
+        }.buttonStyle(.plain).foregroundStyle(palette.ink)
     }
 
     private func agenda(_ course: CampusCourse, focused: Bool) -> some View {
@@ -110,8 +117,11 @@ struct TodayView: View {
                 }.frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "chevron.right").font(.caption)
             }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
-                .foregroundStyle(focused ? Palette.paper : Palette.ink)
-                .background(focused ? Palette.ink : Palette.surface, in: RoundedRectangle(cornerRadius: 12))
+                .foregroundStyle(focused && !palette.isJournal ? palette.paper : palette.ink)
+                .background(focused && !palette.isJournal ? palette.ink : palette.surface, in: RoundedRectangle(cornerRadius: 12))
+                .overlay {
+                    if palette.isJournal { RoundedRectangle(cornerRadius: 12).stroke(palette.blue.opacity(0.2), lineWidth: 0.75) }
+                }
         }.buttonStyle(.plain)
     }
 }

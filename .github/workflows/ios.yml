@@ -19,7 +19,14 @@ jobs:
           xcodebuild -version
           brew install xcodegen
           xcodegen generate
-      - name: Build actual application and widget
+      - name: Test theme defaults and persistence across processes
+        run: |
+          set -o pipefail
+          swiftc NigoNest/Services/AppTheme.swift Tests/ThemeState/main.swift -o /tmp/nigo-theme-check
+          /tmp/nigo-theme-check "nigo.theme-test.${GITHUB_RUN_ID}" seed
+          /tmp/nigo-theme-check "nigo.theme-test.${GITHUB_RUN_ID}" reload
+          /tmp/nigo-theme-check "nigo.theme-test.${GITHUB_RUN_ID}" fallback
+      - name: Build themed application and widget
         run: |
           set -o pipefail
           xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic build | tee build.log

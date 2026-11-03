@@ -4,6 +4,16 @@ import SwiftUI
 struct NigoNestApp: App {
     @StateObject private var session = SessionStore()
 
+    init() {
+        #if DEBUG
+        let args = ProcessInfo.processInfo.arguments
+        if let index = args.firstIndex(of: "-persistTheme"), args.count > index + 1,
+           let theme = AppTheme(rawValue: args[index + 1]) {
+            ThemePreference.save(theme)
+        }
+        #endif
+    }
+
     private var previewRoot: some View {
         let args = ProcessInfo.processInfo.arguments
         #if DEBUG
@@ -26,8 +36,7 @@ struct NigoNestApp: App {
 
     var body: some Scene {
         WindowGroup {
-            previewRoot
-                .tint(Palette.ink)
+            ThemeHost { previewRoot }
                 .preferredColorScheme(previewAppearance)
         }
     }

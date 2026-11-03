@@ -7,7 +7,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    TARGETED_DEVICE_FAMILY: "1,2"
+    TARGETED_DEVICE_FAMILY: "1"
     DEVELOPMENT_TEAM: "2326DQSJ7V"
 targets:
   NigoNest:
@@ -25,7 +25,7 @@ targets:
         CODE_SIGN_IDENTITY: "Apple Distribution"
         PROVISIONING_PROFILE_SPECIFIER: "NigoNest App Store"
         MARKETING_VERSION: "1.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
         CODE_SIGN_ENTITLEMENTS: NigoNest/NigoNest.entitlements
     dependencies:
       - target: NigoNestWidget
@@ -47,6 +47,6 @@ targets:
         PROVISIONING_PROFILE_SPECIFIER: "NigoNest Widget App Store"
         CODE_SIGN_ENTITLEMENTS: Widgets/Widget.entitlements
         MARKETING_VERSION: "1.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
     scheme:
       gatherCoverageData: false

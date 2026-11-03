@@ -14,10 +14,21 @@ struct NigoNestApp: App {
         return AnyView(RootView().environmentObject(session))
     }
 
+    private var previewAppearance: ColorScheme? {
+        #if DEBUG
+        let args = ProcessInfo.processInfo.arguments
+        if let index = args.firstIndex(of: "-previewAppearance"), args.count > index + 1 {
+            return args[index + 1] == "dark" ? .dark : .light
+        }
+        #endif
+        return nil
+    }
+
     var body: some Scene {
         WindowGroup {
             previewRoot
                 .tint(Palette.ink)
+                .preferredColorScheme(previewAppearance)
         }
     }
 }

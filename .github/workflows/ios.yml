@@ -23,17 +23,25 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic build | tee build.log
-      - name: Capture production views with local demonstration data
-        timeout-minutes: 6
-        run: bash scripts/capture-ios.sh
-      - name: Run navigation UI tests
-        run: |
-          set -o pipefail
-          xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' -derivedDataPath build -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic test | tee tests.log
       - name: Verify release build excludes preview entry point
         run: |
           set -o pipefail
           xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath release-build CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic build | tee release.log
+      - name: Capture actual UI through navigation tests
+        timeout-minutes: 18
+        run: |
+          set -o pipefail
+          xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' -parallel-testing-enabled NO -maximum-concurrent-test-simulator-destinations 1 -derivedDataPath build -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic test | tee tests.log
+      - name: Export screenshot attachments and test results
+        if: always()
+        run: |
+          mkdir -p screenshots
+          xcodebuild -version > screenshots/environment.txt
+          printf '\nSource: native XCUIScreen screenshots of production SwiftUI views.\nData: local demonstration fixtures. Device: iPhone 17 SIMULATOR, not physical iPhone.\n' >> screenshots/environment.txt
+          if [ -d TestResults.xcresult ]; then
+            xcrun xcresulttool export attachments --path TestResults.xcresult --output-path screenshots
+            xcrun xcresulttool get test-results summary --path TestResults.xcresult > screenshots/test-summary.json
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

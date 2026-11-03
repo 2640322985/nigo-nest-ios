@@ -33,6 +33,20 @@ targets:
         embed: true
     scheme:
       gatherCoverageData: false
+      testTargets:
+        - NigoNestUITests
+  NigoNestUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: NigoNest
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nigo.nest.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
   NigoNestWidget:
     type: app-extension
     platform: iOS

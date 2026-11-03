@@ -6,16 +6,18 @@ struct NigoNestApp: App {
 
     private var previewRoot: some View {
         let args = ProcessInfo.processInfo.arguments
+        #if DEBUG
         if let flag = args.firstIndex(of: "-preview"), args.count > flag + 1 {
             return AnyView(PreviewHost(page: args[flag + 1]))
         }
+        #endif
         return AnyView(RootView().environmentObject(session))
     }
 
     var body: some Scene {
         WindowGroup {
             previewRoot
-                .preferredColorScheme(.light)
+                .tint(Palette.ink)
         }
     }
 }

@@ -12,7 +12,7 @@ struct LoginView: View {
             VStack(alignment: .leading, spacing: 28) {
                 HStack {
                     Spacer()
-                    StreetCat()
+                    CampusArtwork(name: "CampusReading").frame(width: 100, height: 125)
                 }
                 InkTitle(text: "泥工小窝", size: 40)
                 Text("用学校账号登录")
@@ -52,7 +52,8 @@ struct LoginView: View {
             }
             .font(InkFont.body())
             .padding(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.ink, lineWidth: 3))
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.rule, lineWidth: 1))
         }
     }
 

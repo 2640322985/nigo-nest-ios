@@ -2,57 +2,44 @@ name: Build iOS
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ui/black-white-campus]
+
+permissions:
+  contents: read
 
 jobs:
   simulator:
     runs-on: xcode-27
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-
-      - name: Generate the Xcode project
+      - name: Generate Xcode project
         run: |
           xcodebuild -version
           brew install xcodegen
           xcodegen generate
-
-      - name: Build for the iOS Simulator
+      - name: Build actual application and widget
         run: |
-          xcodebuild \
-            -project NigoNest.xcodeproj \
-            -scheme NigoNest \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_STYLE=Automatic \
-            build
-
-      - name: Boot a simulator and capture the pages
+          set -o pipefail
+          xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic build | tee build.log
+      - name: Capture production views with local demonstration data
+        run: bash scripts/capture-ios.sh
+      - name: Run navigation UI tests
         run: |
-          set -euo pipefail
-          DEVICE_TYPE="iPhone 17"
-          RUNTIME="com.apple.CoreSimulator.SimRuntime.iOS-27-0"
-          echo "DEVICE_TYPE=$DEVICE_TYPE RUNTIME=$RUNTIME"
-          xcrun simctl list runtimes
-          xcrun simctl list devicetypes | sed -n '/iPhone/p'
-          UDID=$(xcrun simctl create nigo-preview "$DEVICE_TYPE" "$RUNTIME")
-          xcrun simctl boot "$UDID"
-          xcrun simctl bootstatus "$UDID" -b
-          APP=$(find build/Build/Products -name '*.app' -path '*iphonesimulator*' ! -path '*Widget*' | head -n 1)
-          echo "APP=$APP"
-          xcrun simctl install "$UDID" "$APP"
-          mkdir -p screenshots
-          capture() {
-            xcrun simctl terminate "$UDID" com.nigo.nest || true
-            xcrun simctl launch "$UDID" com.nigo.nest -preview "$1"
-            sleep 4
-            xcrun simctl io "$UDID" screenshot "screenshots/$1.png"
-          }
-          capture login
-          capture plaza
-          capture profile
-          capture back
-
+          set -o pipefail
+          xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.0' -derivedDataPath build -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic test | tee tests.log
+      - name: Verify release build excludes preview entry point
+        run: |
+          set -o pipefail
+          xcodebuild -project NigoNest.xcodeproj -scheme NigoNest -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath release-build CODE_SIGNING_ALLOWED=NO CODE_SIGN_STYLE=Automatic build | tee release.log
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: screenshots
-          path: screenshots/*.png
+          name: native-ui-evidence
+          path: |
+            screenshots/
+            build.log
+            tests.log
+            release.log
+            TestResults.xcresult

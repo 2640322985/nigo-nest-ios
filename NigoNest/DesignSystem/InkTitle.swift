@@ -6,18 +6,12 @@ struct InkTitle: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .lastTextBaseline, spacing: 0) {
-                ForEach(Array(text.enumerated()), id: \.offset) { index, character in
-                    Text(String(character))
-                        .font(InkFont.title(size + (index % 3 == 0 ? 2 : 0)))
-                        .rotationEffect(.degrees(index % 2 == 0 ? -2.5 : 2))
-                        .offset(y: index % 2 == 0 ? 1 : -1)
-                }
-            }
+            Text(text)
+                .font(.custom("MaShanZheng-Regular", size: size, relativeTo: .title))
             .foregroundStyle(Palette.ink)
             WobblyUnderline()
-                .stroke(Palette.ink, style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [1, 0]))
-                .frame(height: 8)
+                .stroke(Palette.ink, style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+                .frame(width: min(size * 4.5, 180), height: 5)
         }
     }
 }
@@ -42,10 +36,7 @@ struct WobblyUnderline: Shape {
 
 struct WavyDivider: View {
     var body: some View {
-        WavyLine()
-            .stroke(Palette.ink, style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [7, 6]))
-            .frame(height: 14)
-            .padding(.vertical, 8)
+        Rectangle().fill(Palette.rule).frame(height: 0.5).padding(.vertical, 14)
     }
 }
 

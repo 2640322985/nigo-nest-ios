@@ -37,6 +37,9 @@ struct APIClient {
     }
 
     private func send(_ request: URLRequest) async throws -> Data {
+        #if DEBUG
+        if token == "local-ui-preview" { return try PreviewFixtures.response(request) }
+        #endif
         var request = request
         if let token, !token.isEmpty {
             request.setValue(token, forHTTPHeaderField: "x-auth-token")

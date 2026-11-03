@@ -6,8 +6,8 @@ struct InkAvatar: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-                .stroke(Palette.ink, lineWidth: 3)
+            Circle().fill(Palette.surface)
+            Circle().stroke(Palette.rule, lineWidth: 1)
             if let url, url.hasPrefix("http"), let imageURL = URL(string: url) {
                 AsyncImage(url: imageURL) { phase in
                     if let image = phase.image {
@@ -17,7 +17,7 @@ struct InkAvatar: View {
                     }
                 }
                 .frame(width: size - 8, height: size - 8)
-                .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
+                .clipShape(Circle())
             } else {
                 placeholder
             }
@@ -27,9 +27,8 @@ struct InkAvatar: View {
     }
 
     private var placeholder: some View {
-        Circle()
-            .stroke(Palette.ink, lineWidth: 2.5)
-            .frame(width: size * 0.34, height: size * 0.34)
-            .offset(y: -size * 0.06)
+        Image(systemName: "person.crop.circle")
+            .font(.system(size: size * 0.68, weight: .ultraLight))
+            .foregroundStyle(Palette.ink)
     }
 }

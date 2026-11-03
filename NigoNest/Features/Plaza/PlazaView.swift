@@ -17,17 +17,31 @@ struct PlazaView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
+
+                InkTitle(text: "下课，聊两句。", size: 30)
+                    .padding(.bottom, 12)
+                Text(session.isPreview ? "同学们的校园日常 · 演示数据" : "同学们的校园日常")
+                    .font(.subheadline).foregroundStyle(.secondary).padding(.bottom, 22)
                 HStack {
-                    InkTitle(text: "广场", size: 34)
+                    Text("最新").font(.subheadline.bold())
+                        .padding(.bottom, 8).overlay(alignment: .bottom) { Capsule().frame(width: 24, height: 2) }
+                    Button("我的动态") { nav.open(.mine) }.font(.subheadline).padding(.leading, 16)
                     Spacer()
-                    Button("发帖") { nav.open(.compose) }
-                        .font(InkFont.body())
-                        .foregroundStyle(Palette.ink)
-                }
-                .padding(.bottom, 12)
+                }.padding(.bottom, 14)
+                Button { nav.open(.compose) } label: {
+                    HStack {
+                        Image(systemName: "pencil")
+                        Text("分享一件校园小事…")
+                        Spacer()
+                    }.font(.subheadline).foregroundStyle(.secondary).padding(13)
+                        .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12))
+                }.buttonStyle(.plain).padding(.bottom, 18)
                 StatusText(text: error)
                 if loading && posts.isEmpty {
                     ProgressView().tint(Palette.ink)
+                }
+                if posts.isEmpty && !loading && error.isEmpty {
+                    ContentUnavailableView("广场还很安静", systemImage: "bubble.left", description: Text("分享一件校园小事，认识更多同学。"))
                 }
                 ForEach(posts) { post in
                     postCard(post)
@@ -46,9 +60,16 @@ struct PlazaView: View {
                 .foregroundStyle(Palette.ink)
                 .padding(.top, 8)
             }
-            .padding(24)
+            .padding(20)
         }
         .background(Palette.paper)
+        .navigationTitle("校园广场").navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("发布动态", systemImage: "square.and.pencil") { nav.open(.compose) }
+            }
+        }
+        .refreshable { await load(page: 1) }
         .task { await load(page: 1) }
     }
 
@@ -66,10 +87,12 @@ struct PlazaView: View {
                     .font(InkFont.body())
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 16) {
-                    Button(post.likedByMe ? "已赞 \(post.likeCount)" : "赞 \(post.likeCount)") {
-                        Task { await like(post) }
+                    Button { Task { await like(post) } } label: {
+                        Label("\(post.likeCount)", systemImage: post.likedByMe ? "heart.fill" : "heart")
                     }
-                    Button("评论 \(post.commentCount)") { Task { await toggle(post) } }
+                    Button { Task { await toggle(post) } } label: {
+                        Label("\(post.commentCount)", systemImage: "bubble.right")
+                    }
                 }
                 .font(InkFont.body(14))
                 .foregroundStyle(Palette.ink)
@@ -78,7 +101,7 @@ struct PlazaView: View {
                 }
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
     }
 
     private func commentBox(_ post: PlazaPost) -> some View {

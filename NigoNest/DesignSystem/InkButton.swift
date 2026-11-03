@@ -18,7 +18,7 @@ struct InkButton: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(Palette.ink, lineWidth: filled ? 0 : 4)
+                        .stroke(Palette.ink, lineWidth: filled ? 0 : 1)
                 )
         }
         .buttonStyle(.plain)
@@ -45,12 +45,10 @@ struct InkRow: View {
                         .background(Palette.ink, in: Capsule())
                 }
                 Spacer()
-                Text(">")
-                    .font(InkFont.body())
-                    .rotationEffect(.degrees(8))
-                    .foregroundStyle(Palette.ink)
+                Image(systemName: "chevron.right")
+                    .font(.caption).foregroundStyle(.tertiary)
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 15)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -80,6 +78,7 @@ extension View {
     func inkField() -> some View {
         font(InkFont.body())
             .padding(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.ink, lineWidth: 3))
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.rule, lineWidth: 0.75))
     }
 }

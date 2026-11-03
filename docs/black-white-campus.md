@@ -12,7 +12,11 @@
 
 ## 云端验证
 
-`Build iOS` 使用 GitHub Actions Xcode 27 环境，编译主应用与小组件，运行 iPhone 17 **模拟器**并导出深浅色、登录、课表、大字体截图。随后执行导航 UI 测试，并单独编译 Release。
+`Build iOS` 使用 GitHub Actions Xcode 27.1 环境，编译主应用与小组件，单独编译 Release，并运行 iPhone 17 / iOS 27.0 **模拟器**导出今日、广场、我的三页深浅色截图。截图经过空白画面检测和人工视觉检查。
+
+最终验证源码：`7168e42`；[成功运行记录](https://github.com/ithtelab/nigo-nest-ios/actions/runs/41598472387)。七张原图保存在 [screenshots](screenshots/README.md)。正常启动登录页截图确认演示资料不会恢复为真实登录会话；演示资料更新与退出也不写入正常会话记录。签到操作已改为紧凑的黑白实色按钮，并复核深浅色对比度。
+
+导航 UI 测试代码保留于 `UITests`。云端 iOS 27.0 的 UI 测试运行器因 `Timed out waiting for AX loaded notification` 初始化失败，未进入测试用例；另一个预装 iOS 27.1 运行时拒绝创建该机型。本次未将交互自动化、实体手机、真实教务和场馆交易流程计为验证通过。
 
 截图由实际 SwiftUI 页面产生。Debug 专用 `-preview` 入口通过本地数据传输显示演示内容，不读取用户学校账号、不连接生产服务器、不替代生产界面。Release 不编译预览入口与本地响应。截图标注演示数据，不代表线上数据或实体手机测试。
 
@@ -21,6 +25,8 @@
 标题使用 Google Fonts 的 Ma Shan Zheng，SIL OFL 许可证附于 `NigoNest/Resources/Fonts/OFL.txt`。字体来源：https://github.com/google/fonts/tree/main/ofl/mashanzheng 。
 
 `CampusWalking`、`CampusReading` 是本次内置 image_gen 生成的原创透明位图，并非另一课表项目素材。正文、课程和用户数据使用系统字体。
+
+资源文件：`NigoNest/Assets.xcassets/CampusWalking.imageset/artwork.png`、`NigoNest/Assets.xcassets/CampusReading.imageset/artwork.png`。
 
 生成共同提示词：Generate an original black-and-white hand drawn editorial illustration for a clean campus iOS app. Transparent background, single isolated full-body young adult student, generous transparent margins. Fine confident black ink contours, flat solid black hair/clothing patches, white clothing areas opaque white, no gray shading, no scene, no typography, no ground line, no shadows, no adjacent figures, no decorative objects floating. Natural stylized adult proportions, small face, tiny dot eyes, warm quiet personality, not chibi. Whole body and all items visible, suitable for 100pt UI illustration. Completely original design.
 

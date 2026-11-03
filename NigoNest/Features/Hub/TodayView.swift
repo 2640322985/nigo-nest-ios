@@ -6,7 +6,7 @@ struct TodayView: View {
     @EnvironmentObject private var nav: AppNav
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var courses: [CampusCourse] = []
-    @State private var emptyClassroom = false
+    @State private var features = FeatureFlags()
     private var today: [CampusCourse] {
         courses.filter { $0.weekday == CampusSchedule.weekday(session.displayDate) }
             .sorted { $0.start < $1.start }
@@ -24,11 +24,15 @@ struct TodayView: View {
 
                 focusCard
                 CampusSection(title: "校园工具")
-                HStack(alignment: .top, spacing: 0) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 4), spacing: 16) {
                     tool("课表", "calendar", .schedule)
-                    if emptyClassroom { tool("空教室", "chair", .classroom) }
+                    if features.emptyClassroom { tool("空教室", "chair", .classroom) }
                     tool("场馆预约", "sportscourt", .venue)
-                    tool("好友", "person.2", .friends)
+                    tool("签到", "checkmark.circle", .checkin)
+                    if features.courseGrab { tool("抢课", "bolt", .grab) }
+                    if showYx { tool("迎新", "graduationcap", .yx) }
+                    if showSafety { tool("安全考试", "checkmark.shield", .safety) }
+                    tool("建议", "bubble.left", .suggestions)
                 }
                 CampusSection(title: "一天的安排", detail: today.isEmpty ? "" : "共 \(today.count) 门课")
                 if today.isEmpty {
@@ -50,17 +54,8 @@ struct TodayView: View {
                 Button("消息通知", systemImage: "bell") { nav.open(.notifications) }
             }
         }
-        .task {
-            courses = CampusSchedule.load(student: session.user?.studentId ?? "")
-            #if DEBUG
-            if session.isPreview { courses = PreviewFixtures.courses }
-            #endif
-            if let raw = try? await session.client.get("api/app/features") {
-                let data = JSON.object(raw)
-                let flags = data["features"] as? [String: Any] ?? data
-                emptyClassroom = flags["emptyClassroom"] == nil || JSON.bool(flags["emptyClassroom"])
-            }
-        }
+        .task { await reload() }
+        .onAppear { courses = CampusSchedule.load(student: session.user?.studentId ?? "") }
     }
 
     private var focusCard: some View {
@@ -95,6 +90,31 @@ struct TodayView: View {
                 .overlay(RoundedRectangle(cornerRadius: 18).stroke(palette.ink, lineWidth: 1))
                 .overlay(alignment: .topLeading) { if palette.isJournal { JournalTape() } }
         }.buttonStyle(.plain)
+    }
+
+    private var showYx: Bool {
+        features.yxExam && (session.user?.studentId.hasPrefix("2026") == true)
+    }
+
+    private var showSafety: Bool {
+        features.safetyExam && (session.user?.studentId.hasPrefix("2026") == true)
+    }
+
+    private func reload() async {
+        courses = CampusSchedule.load(student: session.user?.studentId ?? "")
+        #if DEBUG
+        if session.isPreview { courses = PreviewFixtures.courses }
+        #endif
+        guard let raw = try? await session.client.get("api/app/features") else { return }
+        let src = JSON.object(raw)
+        let flags = src["features"] as? [String: Any] ?? src
+        features = FeatureFlags(
+            courseGrab: flags["courseGrab"] == nil ? true : JSON.bool(flags["courseGrab"]),
+            yxExam: flags["yxExam"] == nil ? true : JSON.bool(flags["yxExam"]),
+            safetyExam: flags["safetyExam"] == nil ? true : JSON.bool(flags["safetyExam"]),
+            emptyClassroom: flags["emptyClassroom"] == nil ? true : JSON.bool(flags["emptyClassroom"]),
+            chuanggaoRun: JSON.bool(flags["chuanggaoRun"])
+        )
     }
 
     private func tool(_ title: String, _ icon: String, _ route: AppRoute) -> some View {

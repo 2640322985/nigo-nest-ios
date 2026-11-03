@@ -93,25 +93,30 @@ struct ScheduleView: View {
                     notes[JSON.string(row["courseKey"])] = JSON.string(row["text"])
                 }
             }
-            courses = JSON.dictionaries(schedule["courses"]).enumerated().map { index, row in
+            courses = JSON.dictionaries(schedule["courses"]).flatMap { row in
                 let name = JSON.string(row["name"])
-                let weekday = JSON.int(row["weekday"], fallback: 1)
+                let weekday = min(max(JSON.int(row["weekday"], fallback: 1), 1), 7)
                 let sections = JSON.dictionaries(row["sections"])
-                let start = JSON.int(sections.first?["start"], fallback: 1)
-                let end = JSON.int(sections.first?["end"], fallback: start)
+                let blocks = sections.isEmpty ? [["start": 1, "end": 1] as [String: Any]] : sections
                 let identity = JSON.string(row["id"]).split(separator: "|").first.map(String.init) ?? name
-                let key = "\(identity)|\(weekday)|\(start)-\(end)"
-                return CourseItem(
-                    id: "\(key)-\(index)",
-                    name: name,
-                    weekday: min(max(weekday, 1), 7),
-                    start: start,
-                    end: end,
-                    place: JSON.string(row["location"]),
-                    teacher: JSON.string(row["teacher"], fallback: JSON.string(row["teacherName"])),
-                    noteKey: key,
-                    note: notes[key] ?? ""
-                )
+                let teacher = JSON.string(row["teacher"], fallback: JSON.string(row["teacherName"]))
+                let place = JSON.string(row["location"])
+                return blocks.enumerated().map { index, section in
+                    let start = JSON.int(section["start"], fallback: 1)
+                    let end = JSON.int(section["end"], fallback: start)
+                    let key = "\(identity)|\(weekday)|\(start)-\(end)"
+                    return CourseItem(
+                        id: "\(key)-\(index)",
+                        name: name,
+                        weekday: weekday,
+                        start: start,
+                        end: end,
+                        place: place,
+                        teacher: teacher,
+                        noteKey: key,
+                        note: notes[key] ?? ""
+                    )
+                }
             }
             publishWidget()
             if !session.isPreview { CampusSchedule.save(courses, student: session.user?.studentId ?? "") }

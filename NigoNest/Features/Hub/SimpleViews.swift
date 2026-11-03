@@ -171,6 +171,7 @@ private struct NoteItem: Identifiable {
     var body: String
     var read: Bool
     var type: String
+    var refId: Int
 }
 
 struct NotificationsView: View {
@@ -205,7 +206,8 @@ struct NotificationsView: View {
                     title: JSON.string(row["title"]),
                     body: JSON.string(row["body"]),
                     read: !JSON.string(row["readAt"]).isEmpty,
-                    type: JSON.string(row["type"])
+                    type: JSON.string(row["type"]),
+                    refId: JSON.int(row["refId"])
                 )
             }
         } catch {
@@ -215,8 +217,21 @@ struct NotificationsView: View {
 
     private func open(_ row: NoteItem) async {
         _ = try? await session.client.post("api/notifications/\(row.id)/read", json: [:])
-        if row.type == "friend_request" || row.type == "friend_accepted" {
+        switch row.type {
+        case "friend_request", "friend_accepted":
             nav.open(.friends)
+        case "post_like", "post_comment":
+            if row.refId > 0 { nav.open(.post(row.refId)) }
+        case "course_grab":
+            nav.open(.grab)
+        case "yx_exam":
+            nav.open(.yx)
+        case "bwcks_exam":
+            nav.open(.safety)
+        case "suggestion":
+            nav.open(.suggestions)
+        default:
+            break
         }
         await load()
     }

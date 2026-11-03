@@ -200,7 +200,7 @@ struct ProfileView: View {
     }
 }
 
-private struct FeatureFlags {
+struct FeatureFlags {
     var courseGrab = true
     var yxExam = true
     var safetyExam = true

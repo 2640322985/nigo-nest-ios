@@ -85,8 +85,18 @@ struct ProfileView: View {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 8) {
                     Text("连续签到 \(streak) 天").font(.caption)
-                    Button(checkedIn ? "已签到" : signing ? "签到中" : "签到 +\(nextAward)") { Task { await sign() } }
-                        .officialAction().disabled(checkedIn || signing)
+                    Button { Task { await sign() } } label: {
+                        HStack(spacing: 5) {
+                            if checkedIn { Image(systemName: "checkmark") }
+                            Text(checkedIn ? "已签到" : signing ? "签到中…" : "签到 +\(nextAward)")
+                        }
+                        .font(.system(size: 14, weight: .semibold))
+                        .padding(.horizontal, 13).padding(.vertical, 8)
+                        .foregroundStyle(checkedIn ? Palette.ink : Palette.paper)
+                        .background(checkedIn ? Palette.surface : Palette.ink, in: RoundedRectangle(cornerRadius: 9))
+                        .frame(minHeight: 44)
+                    }
+                    .buttonStyle(.plain).disabled(checkedIn || signing)
                 }
                 Button { nav.open(.leaderboard) } label: {
                     Image(systemName: "trophy").font(.title3).frame(minWidth: 44, minHeight: 44)
